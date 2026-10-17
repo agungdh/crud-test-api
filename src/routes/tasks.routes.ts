@@ -7,6 +7,6 @@ import { TaskList } from "../controllers/tasks/taskList";
 export function registerTaskRoutes(openapi: HonoOpenAPIRouterType<any, any, any>) {
 	openapi.get("/api/tasks", TaskList);
 	openapi.post("/api/tasks", TaskCreate);
-	openapi.get("/api/tasks/:taskSlug", TaskFetch);
-	openapi.delete("/api/tasks/:taskSlug", TaskDelete);
+	openapi.get("/api/tasks/:id", TaskFetch);
+	openapi.delete("/api/tasks/:id", TaskDelete);
 }

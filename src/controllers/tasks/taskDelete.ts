@@ -1,6 +1,6 @@
 import { NotFoundException, OpenAPIRoute } from "chanfana";
 import { z } from "zod";
-import { TaskSchema, TaskSlugParams } from "../../models/task";
+import { TaskIdParams, TaskSchema } from "../../models/task";
 import { success } from "../../shared/http";
 import type { AppContext } from "../../shared/types";
 
@@ -9,7 +9,7 @@ export class TaskDelete extends OpenAPIRoute {
 		tags: ["Tasks"],
 		summary: "Delete a Task",
 		request: {
-			params: TaskSlugParams,
+			params: TaskIdParams,
 		},
 		responses: {
 			"200": {
@@ -30,9 +30,9 @@ export class TaskDelete extends OpenAPIRoute {
 	};
 
 	async handle(c: AppContext) {
-		const { taskSlug } = (await this.getValidatedData<typeof this.schema>()).params;
+		const { id } = (await this.getValidatedData<typeof this.schema>()).params;
 
-		const task = await c.get("services").tasks.delete(taskSlug);
+		const task = await c.get("services").tasks.delete(id);
 
 		return success({ task });
 	}

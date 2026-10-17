@@ -1,5 +1,5 @@
 import { ConflictException, NotFoundException } from "chanfana";
-import type { Task } from "../models/task";
+import type { Task, TaskInput } from "../models/task";
 import type { TaskRepository } from "../repositories/task.repository";
 
 export class TaskService {
@@ -9,17 +9,17 @@ export class TaskService {
 		return this.repo.list(opts);
 	}
 
-	async get(slug: string): Promise<Task> {
-		const task = await this.repo.findBySlug(slug);
+	async get(id: number): Promise<Task> {
+		const task = await this.repo.findById(id);
 
 		if (!task) {
-			throw new NotFoundException(`Task '${slug}' not found`);
+			throw new NotFoundException(`Task '${id}' not found`);
 		}
 
 		return task;
 	}
 
-	async create(task: Task): Promise<Task> {
+	async create(task: TaskInput): Promise<Task> {
 		const existing = await this.repo.findBySlug(task.slug);
 
 		if (existing) {
@@ -29,10 +29,10 @@ export class TaskService {
 		return this.repo.create(task);
 	}
 
-	async delete(slug: string): Promise<Task> {
-		const task = await this.get(slug);
+	async delete(id: number): Promise<Task> {
+		const task = await this.get(id);
 
-		await this.repo.delete(slug);
+		await this.repo.delete(id);
 
 		return task;
 	}
