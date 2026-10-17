@@ -1,7 +1,6 @@
-import { NotFoundException, OpenAPIRoute } from "chanfana";
-import { z } from "zod";
-import { TaskIdParams, TaskSchema } from "../../models/task";
-import { success } from "../../shared/http";
+import { OpenAPIRoute } from "chanfana";
+import { TaskIdParams } from "../../models/task";
+import { errorResponse } from "../../shared/errors";
 import type { AppContext } from "../../shared/types";
 
 export class TaskDelete extends OpenAPIRoute {
@@ -12,28 +11,18 @@ export class TaskDelete extends OpenAPIRoute {
 			params: TaskIdParams,
 		},
 		responses: {
-			"200": {
-				description: "Returns if the task was deleted successfully",
-				content: {
-					"application/json": {
-						schema: z.object({
-							success: z.literal(true),
-							result: z.object({
-								task: TaskSchema,
-							}),
-						}),
-					},
-				},
+			"204": {
+				description: "Task deleted",
 			},
-			...NotFoundException.schema(),
+			...errorResponse(404, "Task not found"),
 		},
 	};
 
 	async handle(c: AppContext) {
 		const { id } = (await this.getValidatedData<typeof this.schema>()).params;
 
-		const task = await c.get("services").tasks.delete(id);
+		await c.get("services").tasks.delete(id);
 
-		return success({ task });
+		return c.body(null, 204);
 	}
 }

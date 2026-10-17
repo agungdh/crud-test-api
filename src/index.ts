@@ -17,6 +17,7 @@ app.notFound(handleNotFound);
 
 const openapi = fromHono(app, {
 	docs_url: "/",
+	passthroughErrors: true,
 });
 
 registerRoutes(openapi);

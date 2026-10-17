@@ -1,7 +1,6 @@
-import { NotFoundException, OpenAPIRoute } from "chanfana";
-import { z } from "zod";
+import { OpenAPIRoute } from "chanfana";
 import { TaskIdParams, TaskSchema } from "../../models/task";
-import { success } from "../../shared/http";
+import { errorResponse } from "../../shared/errors";
 import type { AppContext } from "../../shared/types";
 
 export class TaskFetch extends OpenAPIRoute {
@@ -16,16 +15,11 @@ export class TaskFetch extends OpenAPIRoute {
 				description: "Returns a single task if found",
 				content: {
 					"application/json": {
-						schema: z.object({
-							success: z.literal(true),
-							result: z.object({
-								task: TaskSchema,
-							}),
-						}),
+						schema: TaskSchema,
 					},
 				},
 			},
-			...NotFoundException.schema(),
+			...errorResponse(404, "Task not found"),
 		},
 	};
 
@@ -34,6 +28,6 @@ export class TaskFetch extends OpenAPIRoute {
 
 		const task = await c.get("services").tasks.get(id);
 
-		return success({ task });
+		return c.json(task);
 	}
 }

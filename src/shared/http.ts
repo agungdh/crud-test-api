@@ -1,1 +1,0 @@
-export const success = <T>(result: T) => ({ success: true as const, result });
