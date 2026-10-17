@@ -17,7 +17,10 @@
 			"database_name": "crud-test-api-db",
 			"database_id": "LOCAL"
 		}
-	]
+	],
+	"secrets": {
+		"required": ["AUTH_SECRET"]
+	}
 	/**
 	 * Smart Placement
 	 * https://developers.cloudflare.com/workers/configuration/smart-placement/#smart-placement

@@ -7,6 +7,7 @@ export class TaskFetch extends OpenAPIRoute {
 	schema = {
 		tags: ["Tasks"],
 		summary: "Get a single Task by id",
+		security: [{ bearerAuth: [] }],
 		request: {
 			params: TaskIdParams,
 		},

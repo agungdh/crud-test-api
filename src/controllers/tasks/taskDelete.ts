@@ -7,6 +7,7 @@ export class TaskDelete extends OpenAPIRoute {
 	schema = {
 		tags: ["Tasks"],
 		summary: "Delete a Task",
+		security: [{ bearerAuth: [] }],
 		request: {
 			params: TaskIdParams,
 		},

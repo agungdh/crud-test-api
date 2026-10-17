@@ -7,6 +7,7 @@ export class TaskCreate extends OpenAPIRoute {
 	schema = {
 		tags: ["Tasks"],
 		summary: "Create a new Task",
+		security: [{ bearerAuth: [] }],
 		request: {
 			body: {
 				content: {

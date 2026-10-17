@@ -7,6 +7,7 @@ export class TaskList extends OpenAPIRoute {
 	schema = {
 		tags: ["Tasks"],
 		summary: "List Tasks",
+		security: [{ bearerAuth: [] }],
 		request: {
 			query: ListTasksQuery,
 		},
