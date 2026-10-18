@@ -19,20 +19,20 @@ export class TaskService {
 		return task;
 	}
 
-	async create(task: TaskInput): Promise<Task> {
+	async create(task: TaskInput, actorId?: number): Promise<Task> {
 		const existing = await this.repo.findBySlug(task.slug);
 
 		if (existing) {
 			throw new ConflictException(`Task '${task.slug}' already exists`);
 		}
 
-		return this.repo.create(task);
+		return this.repo.create(task, actorId);
 	}
 
-	async delete(id: number): Promise<Task> {
+	async delete(id: number, actorId?: number): Promise<Task> {
 		const task = await this.get(id);
 
-		await this.repo.delete(id);
+		await this.repo.delete(id, actorId);
 
 		return task;
 	}

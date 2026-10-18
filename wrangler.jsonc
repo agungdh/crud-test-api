@@ -15,7 +15,8 @@
 		{
 			"binding": "DB",
 			"database_name": "crud-test-api-db",
-			"database_id": "LOCAL"
+			"database_id": "LOCAL",
+			"migrations_dir": "migrations"
 		}
 	],
 	"secrets": {

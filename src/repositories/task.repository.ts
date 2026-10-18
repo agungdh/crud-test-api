@@ -1,65 +1,44 @@
-import type { Task, TaskInput } from "../models/task";
+import { eq } from "drizzle-orm";
+import type { AppDatabase } from "../db/client";
+import { tasks, type TaskRow } from "../db/schema";
+import type { TaskInput } from "../models/task";
+import { SoftDeleteRepository } from "./base.repository";
 
-export class TaskRepository {
-	constructor(private readonly db: D1Database) {}
-
-	async list(opts: { page: number; isCompleted?: boolean }): Promise<Task[]> {
-		const perPage = 50;
-		const offset = opts.page * perPage;
-
-		const stmt =
-			opts.isCompleted === undefined
-				? this.db.prepare("SELECT * FROM tasks ORDER BY id LIMIT ? OFFSET ?").bind(perPage, offset)
-				: this.db
-						.prepare("SELECT * FROM tasks WHERE completed = ? ORDER BY id LIMIT ? OFFSET ?")
-						.bind(opts.isCompleted ? 1 : 0, perPage, offset);
-
-		const { results } = await stmt.all<Record<string, unknown>>();
-
-		return results.map(toTask);
+export class TaskRepository extends SoftDeleteRepository<typeof tasks> {
+	constructor(db: AppDatabase) {
+		super(db, tasks);
 	}
 
-	async findById(id: number): Promise<Task | null> {
-		const row = await this.db
-			.prepare("SELECT * FROM tasks WHERE id = ?")
-			.bind(id)
-			.first<Record<string, unknown>>();
+	list(opts: { page: number; isCompleted?: boolean }): Promise<TaskRow[]> {
+		const where = opts.isCompleted === undefined ? undefined : eq(tasks.completed, opts.isCompleted);
 
-		return row ? toTask(row) : null;
+		return this.findMany(where, { page: opts.page });
 	}
 
-	async findBySlug(slug: string): Promise<Task | null> {
-		const row = await this.db
-			.prepare("SELECT * FROM tasks WHERE slug = ?")
-			.bind(slug)
-			.first<Record<string, unknown>>();
-
-		return row ? toTask(row) : null;
+	findById(id: number): Promise<TaskRow | null> {
+		return super.findById(id);
 	}
 
-	async create(task: TaskInput): Promise<Task> {
-		const row = await this.db
-			.prepare("INSERT INTO tasks (slug, name, description, completed, due_date) VALUES (?, ?, ?, ?, ?) RETURNING *")
-			.bind(task.slug, task.name, task.description ?? null, task.completed ? 1 : 0, task.due_date)
-			.first<Record<string, unknown>>();
-
-		return toTask(row ?? {});
+	findBySlug(slug: string): Promise<TaskRow | null> {
+		return this.findFirst(eq(tasks.slug, slug));
 	}
 
-	async delete(id: number): Promise<boolean> {
-		const result = await this.db.prepare("DELETE FROM tasks WHERE id = ?").bind(id).run();
-
-		return (result.meta.changes ?? 0) > 0;
+	create(task: TaskInput, actorId?: number): Promise<TaskRow> {
+		return this.insert(
+			{
+				slug: task.slug,
+				name: task.name,
+				description: task.description ?? null,
+				completed: task.completed,
+				due_date: task.due_date,
+			},
+			actorId,
+		);
 	}
-}
 
-function toTask(row: Record<string, unknown>): Task {
-	return {
-		id: Number(row.id),
-		name: row.name as string,
-		slug: row.slug as string,
-		description: (row.description ?? undefined) as string | undefined,
-		completed: Boolean(row.completed),
-		due_date: row.due_date as string,
-	};
+	async delete(id: number, actorId?: number): Promise<boolean> {
+		const row = await this.softDelete(eq(tasks.id, id), actorId);
+
+		return row !== null;
+	}
 }

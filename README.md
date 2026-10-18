@@ -26,7 +26,8 @@ Setup:
 
 1. Local secret lives in `.dev.vars` (see `.dev.vars.example`). For production run:
    `npx wrangler secret put AUTH_SECRET`
-2. Apply migrations: `npm run db:migrate:local` (or `db:migrate:remote`)
+2. Apply migrations: `npm run db:migrate:local` (or `db:migrate:remote`). After editing
+   `src/db/schema.ts`, run `npm run db:generate` first to regenerate the SQL.
 3. Seed a user (no registration endpoint):
    `npm run seed:user -- --email admin@example.com --name Admin --password secret123`
    Add `--remote` to seed the production database.

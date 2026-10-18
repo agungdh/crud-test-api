@@ -1,32 +1,19 @@
-import type { User, UserWithPassword } from "../models/user";
+import { eq } from "drizzle-orm";
+import type { AppDatabase } from "../db/client";
+import { users, type UserRow } from "../db/schema";
+import type { UserWithPassword } from "../models/user";
+import { SoftDeleteRepository } from "./base.repository";
 
-export class UserRepository {
-	constructor(private readonly db: D1Database) {}
-
-	async findByEmail(email: string): Promise<UserWithPassword | null> {
-		const row = await this.db
-			.prepare("SELECT id, email, name, password_hash, created_at FROM users WHERE email = ?")
-			.bind(email)
-			.first<Record<string, unknown>>();
-
-		return row ? { ...toUser(row), password_hash: row.password_hash as string } : null;
+export class UserRepository extends SoftDeleteRepository<typeof users> {
+	constructor(db: AppDatabase) {
+		super(db, users);
 	}
 
-	async findById(id: number): Promise<User | null> {
-		const row = await this.db
-			.prepare("SELECT id, email, name, created_at FROM users WHERE id = ?")
-			.bind(id)
-			.first<Record<string, unknown>>();
-
-		return row ? toUser(row) : null;
+	findByEmail(email: string): Promise<UserWithPassword | null> {
+		return this.findFirst(eq(users.email, email));
 	}
-}
 
-function toUser(row: Record<string, unknown>): User {
-	return {
-		id: Number(row.id),
-		email: row.email as string,
-		name: row.name as string,
-		created_at: row.created_at as string,
-	};
+	findById(id: number): Promise<UserRow | null> {
+		return super.findById(id);
+	}
 }

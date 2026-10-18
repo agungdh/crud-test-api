@@ -46,12 +46,22 @@ export class AuthService {
 	}
 
 	async me(userId: number): Promise<User> {
-		const user = await this.repo.findById(userId);
+		const row = await this.repo.findById(userId);
 
-		if (!user) {
+		if (!row) {
 			throw new UnauthorizedException("User no longer exists");
 		}
 
-		return user;
+		return {
+			id: row.id,
+			email: row.email,
+			name: row.name,
+			created_at: row.created_at,
+			updated_at: row.updated_at,
+			deleted_at: row.deleted_at,
+			created_by: row.created_by,
+			updated_by: row.updated_by,
+			deleted_by: row.deleted_by,
+		};
 	}
 }

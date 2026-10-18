@@ -1,18 +1,20 @@
 import { z } from "zod";
+import { auditFields, auditOmit } from "./audit";
 
 export const TaskSchema = z.object({
 	id: z.number().describe("Task id"),
 	name: z.string().openapi({ example: "lorem" }),
 	slug: z.string(),
-	description: z.string().optional(),
+	description: z.string().nullable().optional(),
 	completed: z.boolean().default(false),
-	due_date: z.iso.date(),
+	due_date: z.number().int().describe("Due date (epoch seconds)"),
+	...auditFields,
 });
 
 export type Task = z.infer<typeof TaskSchema>;
-export type TaskInput = Omit<Task, "id">;
 
-export const CreateTaskBody = TaskSchema.omit({ id: true });
+export const CreateTaskBody = TaskSchema.omit({ id: true, ...auditOmit });
+export type TaskInput = z.infer<typeof CreateTaskBody>;
 
 export const TaskIdParams = z.object({
 	id: z.coerce.number().int().positive().describe("Task id"),

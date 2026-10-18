@@ -78,11 +78,15 @@ async function main() {
 	}
 
 	const passwordHash = await hashPassword(args.password);
+	const now = Date.now();
 
+	// `email` is a *partial* unique index (`WHERE deleted_at IS NULL`), so the
+	// upsert conflict target must repeat that predicate.
 	const sql = [
-		"INSERT INTO users (email, name, password_hash)",
-		`VALUES (${quote(args.email)}, ${quote(args.name)}, ${quote(passwordHash)})`,
-		"ON CONFLICT(email) DO UPDATE SET name = excluded.name, password_hash = excluded.password_hash;",
+		"INSERT INTO users (email, name, password_hash, created_at, updated_at)",
+		`VALUES (${quote(args.email)}, ${quote(args.name)}, ${quote(passwordHash)}, ${now}, ${now})`,
+		"ON CONFLICT(email) WHERE deleted_at IS NULL DO UPDATE SET",
+		"name = excluded.name, password_hash = excluded.password_hash, updated_at = excluded.updated_at;",
 	].join(" ");
 
 	const wranglerArgs = ["wrangler", "d1", "execute", args.db, args.remote ? "--remote" : "--local", "--command", sql];

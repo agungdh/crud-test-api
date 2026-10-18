@@ -1,10 +1,11 @@
 import { z } from "zod";
+import { auditFields } from "./audit";
 
 export const UserSchema = z.object({
 	id: z.number().describe("User id"),
 	email: z.email().describe("User email"),
 	name: z.string().describe("User name"),
-	created_at: z.string().describe("Creation timestamp"),
+	...auditFields,
 });
 
 export type User = z.infer<typeof UserSchema>;
