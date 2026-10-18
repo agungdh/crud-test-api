@@ -27,7 +27,7 @@ export class TaskFetch extends OpenAPIRoute {
 	async handle(c: AppContext) {
 		const { id } = (await this.getValidatedData<typeof this.schema>()).params;
 
-		const task = await c.get("services").tasks.get(id);
+		const task = await c.get("services").tasks.get(c.get("user").id, id);
 
 		return c.json(task);
 	}

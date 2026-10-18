@@ -22,7 +22,7 @@ export class TaskDelete extends OpenAPIRoute {
 	async handle(c: AppContext) {
 		const { id } = (await this.getValidatedData<typeof this.schema>()).params;
 
-		await c.get("services").tasks.delete(id, c.get("user").id);
+		await c.get("services").tasks.delete(c.get("user").id, id);
 
 		return c.body(null, 204);
 	}

@@ -1,5 +1,6 @@
 CREATE TABLE `tasks` (
 	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
+	`user_id` integer NOT NULL,
 	`slug` text NOT NULL,
 	`name` text NOT NULL,
 	`description` text,
@@ -13,7 +14,8 @@ CREATE TABLE `tasks` (
 	`deleted_by` integer
 );
 --> statement-breakpoint
-CREATE UNIQUE INDEX `tasks_slug_unique` ON `tasks` (`slug`) WHERE "tasks"."deleted_at" is null;--> statement-breakpoint
+CREATE UNIQUE INDEX `tasks_user_slug_unique` ON `tasks` (`user_id`,`slug`) WHERE "tasks"."deleted_at" is null;--> statement-breakpoint
+CREATE INDEX `tasks_user_id_idx` ON `tasks` (`user_id`);--> statement-breakpoint
 CREATE INDEX `tasks_deleted_at_idx` ON `tasks` (`deleted_at`);--> statement-breakpoint
 CREATE TABLE `users` (
 	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,

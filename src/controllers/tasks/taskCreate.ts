@@ -29,7 +29,7 @@ export class TaskCreate extends OpenAPIRoute {
 	async handle(c: AppContext) {
 		const taskToCreate = (await this.getValidatedData<typeof this.schema>()).body;
 
-		await c.get("services").tasks.create(taskToCreate, c.get("user").id);
+		await c.get("services").tasks.create(c.get("user").id, taskToCreate);
 
 		return c.body(null, 201);
 	}

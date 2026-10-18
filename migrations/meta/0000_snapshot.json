@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "780f9593-4393-4f43-87e0-2be6337dd6d3",
+  "id": "df8dec1b-b7c7-49db-a773-a3340c6906da",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "tasks": {
@@ -13,6 +13,13 @@
           "primaryKey": true,
           "notNull": true,
           "autoincrement": true
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
         },
         "slug": {
           "name": "slug",
@@ -94,13 +101,21 @@
         }
       },
       "indexes": {
-        "tasks_slug_unique": {
-          "name": "tasks_slug_unique",
+        "tasks_user_slug_unique": {
+          "name": "tasks_user_slug_unique",
           "columns": [
+            "user_id",
             "slug"
           ],
           "isUnique": true,
           "where": "\"tasks\".\"deleted_at\" is null"
+        },
+        "tasks_user_id_idx": {
+          "name": "tasks_user_id_idx",
+          "columns": [
+            "user_id"
+          ],
+          "isUnique": false
         },
         "tasks_deleted_at_idx": {
           "name": "tasks_deleted_at_idx",

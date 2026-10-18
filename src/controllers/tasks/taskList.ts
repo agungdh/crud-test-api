@@ -26,7 +26,7 @@ export class TaskList extends OpenAPIRoute {
 	async handle(c: AppContext) {
 		const { page, isCompleted } = (await this.getValidatedData<typeof this.schema>()).query;
 
-		const tasks = await c.get("services").tasks.list({ page, isCompleted });
+		const tasks = await c.get("services").tasks.list(c.get("user").id, { page, isCompleted });
 
 		return c.json(tasks);
 	}
