@@ -1,5 +1,6 @@
 import { fromHono } from "chanfana";
 import { Hono } from "hono";
+import { cors } from "hono/cors";
 import { requireAuth } from "./middleware/auth";
 import { registerRoutes } from "./routes";
 import { buildServices } from "./shared/container";
@@ -12,6 +13,18 @@ app.use("*", async (c, next) => {
 	c.set("services", buildServices(c.env));
 	await next();
 });
+
+// Allow the SPA (served from a different origin) to call the API from the browser.
+// Registered before the auth guard so CORS preflight (OPTIONS) is not rejected.
+app.use(
+	"/api/*",
+	cors({
+		origin: "*",
+		allowHeaders: ["Content-Type", "Authorization"],
+		allowMethods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+		maxAge: 600,
+	}),
+);
 
 app.onError(handleError);
 app.notFound(handleNotFound);
