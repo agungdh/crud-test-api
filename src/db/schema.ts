@@ -31,7 +31,7 @@ export const tasks = sqliteTable(
 		id: integer("id").primaryKey({ autoIncrement: true }),
 		user_id: integer("user_id")
 			.notNull()
-			.references(() => users.id, { onDelete: "restrict" }),
+			.references(() => users.id, { onUpdate: "restrict", onDelete: "restrict" }),
 		slug: text("slug").notNull(),
 		name: text("name").notNull(),
 		description: text("description"),

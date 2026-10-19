@@ -12,7 +12,7 @@ CREATE TABLE `tasks` (
 	`created_by` integer,
 	`updated_by` integer,
 	`deleted_by` integer,
-	FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON UPDATE no action ON DELETE restrict
+	FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON UPDATE restrict ON DELETE restrict
 );
 --> statement-breakpoint
 CREATE UNIQUE INDEX `tasks_user_slug_unique` ON `tasks` (`user_id`,`slug`) WHERE "tasks"."deleted_at" is null;--> statement-breakpoint

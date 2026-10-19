@@ -1,8 +1,8 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "39e26086-d376-43b8-9c29-3fb367043c0b",
-  "prevId": "bd3fd776-4685-4b36-b486-df7c90b90cb3",
+  "id": "6671f903-9c50-4e6c-b53b-2e1acf251798",
+  "prevId": "ab650efe-85c8-4329-a178-5f184453fc85",
   "tables": {
     "tasks": {
       "name": "tasks",
@@ -137,7 +137,7 @@
             "id"
           ],
           "onDelete": "restrict",
-          "onUpdate": "no action"
+          "onUpdate": "restrict"
         }
       },
       "compositePrimaryKeys": {},
