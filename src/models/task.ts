@@ -1,5 +1,4 @@
 import { z } from "zod";
-import { auditFields, auditOmit } from "./audit";
 
 export const TaskSchema = z.object({
 	id: z.number().describe("Task id"),
@@ -8,12 +7,11 @@ export const TaskSchema = z.object({
 	description: z.string().nullable().optional(),
 	completed: z.boolean().default(false),
 	due_date: z.number().int().describe("Due date (epoch seconds)"),
-	...auditFields,
 });
 
 export type Task = z.infer<typeof TaskSchema>;
 
-export const CreateTaskBody = TaskSchema.omit({ id: true, ...auditOmit });
+export const CreateTaskBody = TaskSchema.omit({ id: true });
 export type TaskInput = z.infer<typeof CreateTaskBody>;
 
 /**

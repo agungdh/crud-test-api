@@ -56,12 +56,6 @@ export class AuthService {
 			id: row.id,
 			email: row.email,
 			name: row.name,
-			created_at: row.created_at,
-			updated_at: row.updated_at,
-			deleted_at: row.deleted_at,
-			created_by: row.created_by,
-			updated_by: row.updated_by,
-			deleted_by: row.deleted_by,
 		};
 	}
 }

@@ -1,6 +1,17 @@
 import { ConflictException, NotFoundException } from "chanfana";
+import type { TaskRow } from "../db/schema";
 import type { Task, TaskInput, UpdateTaskInput } from "../models/task";
 import type { TaskRepository } from "../repositories/task.repository";
+
+/** Map a database row onto the public API model, dropping audit columns. */
+const toTask = (row: TaskRow): Task => ({
+	id: row.id,
+	name: row.name,
+	slug: row.slug,
+	description: row.description,
+	completed: row.completed,
+	due_date: row.due_date,
+});
 
 /**
  * Tasks are private to their owner. Every method takes the acting `userId` and
@@ -11,8 +22,10 @@ import type { TaskRepository } from "../repositories/task.repository";
 export class TaskService {
 	constructor(private readonly repo: TaskRepository) {}
 
-	list(userId: number, opts: { page: number; isCompleted?: boolean }): Promise<Task[]> {
-		return this.repo.list(userId, opts);
+	async list(userId: number, opts: { page: number; isCompleted?: boolean }): Promise<Task[]> {
+		const rows = await this.repo.list(userId, opts);
+
+		return rows.map(toTask);
 	}
 
 	async get(userId: number, id: number): Promise<Task> {
@@ -22,7 +35,7 @@ export class TaskService {
 			throw new NotFoundException(`Task '${id}' not found`);
 		}
 
-		return task;
+		return toTask(task);
 	}
 
 	async create(userId: number, task: TaskInput): Promise<Task> {
@@ -32,7 +45,7 @@ export class TaskService {
 			throw new ConflictException(`Task '${task.slug}' already exists`);
 		}
 
-		return this.repo.create(userId, task);
+		return toTask(await this.repo.create(userId, task));
 	}
 
 	async update(userId: number, id: number, task: UpdateTaskInput): Promise<Task> {
@@ -52,7 +65,7 @@ export class TaskService {
 			throw new NotFoundException(`Task '${id}' not found`);
 		}
 
-		return updated;
+		return toTask(updated);
 	}
 
 	async delete(userId: number, id: number): Promise<Task> {
