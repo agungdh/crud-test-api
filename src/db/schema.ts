@@ -10,25 +10,6 @@ import { auditColumns } from "./audit";
  * index (`WHERE deleted_at IS NULL`) so a deleted row never blocks a new one.
  */
 
-export const tasks = sqliteTable(
-	"tasks",
-	{
-		id: integer("id").primaryKey({ autoIncrement: true }),
-		user_id: integer("user_id").notNull(),
-		slug: text("slug").notNull(),
-		name: text("name").notNull(),
-		description: text("description"),
-		completed: integer("completed", { mode: "boolean" }).notNull().default(false),
-		due_date: integer("due_date").notNull(),
-		...auditColumns,
-	},
-	(t) => [
-		uniqueIndex("tasks_user_slug_unique").on(t.user_id, t.slug).where(sql`${t.deleted_at} is null`),
-		index("tasks_user_id_idx").on(t.user_id),
-		index("tasks_deleted_at_idx").on(t.deleted_at),
-	],
-);
-
 export const users = sqliteTable(
 	"users",
 	{
@@ -41,6 +22,27 @@ export const users = sqliteTable(
 	(t) => [
 		uniqueIndex("users_email_unique").on(t.email).where(sql`${t.deleted_at} is null`),
 		index("users_deleted_at_idx").on(t.deleted_at),
+	],
+);
+
+export const tasks = sqliteTable(
+	"tasks",
+	{
+		id: integer("id").primaryKey({ autoIncrement: true }),
+		user_id: integer("user_id")
+			.notNull()
+			.references(() => users.id, { onDelete: "restrict" }),
+		slug: text("slug").notNull(),
+		name: text("name").notNull(),
+		description: text("description"),
+		completed: integer("completed", { mode: "boolean" }).notNull().default(false),
+		due_date: integer("due_date").notNull(),
+		...auditColumns,
+	},
+	(t) => [
+		uniqueIndex("tasks_user_slug_unique").on(t.user_id, t.slug).where(sql`${t.deleted_at} is null`),
+		index("tasks_user_id_idx").on(t.user_id),
+		index("tasks_deleted_at_idx").on(t.deleted_at),
 	],
 );
 
