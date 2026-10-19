@@ -29,7 +29,6 @@ export class TaskUpdate extends OpenAPIRoute {
 			},
 			...validationErrorResponse(),
 			...errorResponse(404, "Task not found"),
-			...errorResponse(409, "Task already exists"),
 		},
 	};
 

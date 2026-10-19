@@ -1,4 +1,4 @@
-import { ConflictException, NotFoundException } from "chanfana";
+import { InputValidationException, NotFoundException } from "chanfana";
 import type { TaskRow } from "../db/schema";
 import type { Task, TaskInput, UpdateTaskInput } from "../models/task";
 import type { TaskRepository } from "../repositories/task.repository";
@@ -42,7 +42,7 @@ export class TaskService {
 		const existing = await this.repo.findOwnedBySlug(userId, task.slug);
 
 		if (existing) {
-			throw new ConflictException(`Task '${task.slug}' already exists`);
+			throw new InputValidationException(`Task '${task.slug}' already exists`, ["body", "slug"]);
 		}
 
 		return toTask(await this.repo.create(userId, task));
@@ -55,7 +55,7 @@ export class TaskService {
 			const slugOwner = await this.repo.findOwnedBySlug(userId, task.slug);
 
 			if (slugOwner && slugOwner.id !== id) {
-				throw new ConflictException(`Task '${task.slug}' already exists`);
+				throw new InputValidationException(`Task '${task.slug}' already exists`, ["body", "slug"]);
 			}
 		}
 

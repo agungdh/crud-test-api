@@ -1,6 +1,6 @@
 import { OpenAPIRoute } from "chanfana";
 import { CreateTaskBody } from "../../models/task";
-import { errorResponse, validationErrorResponse } from "../../shared/errors";
+import { validationErrorResponse } from "../../shared/errors";
 import type { AppContext } from "../../shared/types";
 
 export class TaskCreate extends OpenAPIRoute {
@@ -22,7 +22,6 @@ export class TaskCreate extends OpenAPIRoute {
 				description: "Task created",
 			},
 			...validationErrorResponse(),
-			...errorResponse(409, "Task already exists"),
 		},
 	};
 
