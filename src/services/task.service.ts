@@ -1,5 +1,5 @@
 import { ConflictException, NotFoundException } from "chanfana";
-import type { Task, TaskInput } from "../models/task";
+import type { Task, TaskInput, UpdateTaskInput } from "../models/task";
 import type { TaskRepository } from "../repositories/task.repository";
 
 /**
@@ -33,6 +33,26 @@ export class TaskService {
 		}
 
 		return this.repo.create(userId, task);
+	}
+
+	async update(userId: number, id: number, task: UpdateTaskInput): Promise<Task> {
+		const existing = await this.get(userId, id);
+
+		if (task.slug !== existing.slug) {
+			const slugOwner = await this.repo.findOwnedBySlug(userId, task.slug);
+
+			if (slugOwner && slugOwner.id !== id) {
+				throw new ConflictException(`Task '${task.slug}' already exists`);
+			}
+		}
+
+		const updated = await this.repo.replaceOwned(userId, id, task);
+
+		if (!updated) {
+			throw new NotFoundException(`Task '${id}' not found`);
+		}
+
+		return updated;
 	}
 
 	async delete(userId: number, id: number): Promise<Task> {

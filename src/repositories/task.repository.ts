@@ -1,7 +1,7 @@
 import { and, eq, type SQL } from "drizzle-orm";
 import type { AppDatabase } from "../db/client";
 import { tasks, type TaskRow } from "../db/schema";
-import type { TaskInput } from "../models/task";
+import type { TaskInput, UpdateTaskInput } from "../models/task";
 import { SoftDeleteRepository } from "./base.repository";
 
 /**
@@ -41,6 +41,21 @@ export class TaskRepository extends SoftDeleteRepository<typeof tasks> {
 				slug: task.slug,
 				name: task.name,
 				description: task.description ?? null,
+				completed: task.completed,
+				due_date: task.due_date,
+			},
+			userId,
+		);
+	}
+
+	/** PUT semantics: overwrite every mutable column of the owned task. */
+	replaceOwned(userId: number, id: number, task: UpdateTaskInput): Promise<TaskRow | null> {
+		return this.update(
+			this.ownedBy(userId, eq(tasks.id, id)),
+			{
+				slug: task.slug,
+				name: task.name,
+				description: task.description,
 				completed: task.completed,
 				due_date: task.due_date,
 			},
