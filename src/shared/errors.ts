@@ -1,4 +1,4 @@
-import { ApiException, InputValidationException, MultiException } from "chanfana";
+import { ApiException, MultiException } from "chanfana";
 import type { ErrorHandler, NotFoundHandler } from "hono";
 import { HTTPException } from "hono/http-exception";
 import type { ContentfulStatusCode } from "hono/utils/http-status";
@@ -6,22 +6,15 @@ import { z } from "zod";
 import { ZodError } from "zod";
 import type { AppEnv } from "./types";
 
+/**
+ * All error responses share the same shape: `{ message }`. The HTTP status code
+ * is the only error code — no numeric application codes.
+ */
 export const ErrorSchema = z.object({
-	code: z.number(),
 	message: z.string(),
 });
 
-export const ValidationErrorSchema = ErrorSchema.extend({
-	path: z.array(z.string()),
-});
-
-export const ErrorResponseSchema = z.object({
-	error: ErrorSchema,
-});
-
-export const ValidationErrorResponseSchema = z.object({
-	errors: ValidationErrorSchema.array(),
-});
+export const ErrorResponseSchema = ErrorSchema;
 
 export const errorResponse = (status: number, description: string) => ({
 	[status]: {
@@ -34,55 +27,36 @@ export const errorResponse = (status: number, description: string) => ({
 	},
 });
 
-export const validationErrorResponse = (description = "Input validation error") => ({
-	"400": {
-		description,
-		content: {
-			"application/json": {
-				schema: ValidationErrorResponseSchema,
-			},
-		},
-	},
-});
+export const validationErrorResponse = (description = "Input validation error") =>
+	errorResponse(400, description);
 
-const isValidationError = (err: unknown): boolean =>
-	err instanceof ZodError ||
-	err instanceof InputValidationException ||
-	(err instanceof MultiException && err.errors.every((e) => e instanceof InputValidationException));
+/** Flatten chanfana's exception tree into a single human-readable message. */
+const messageOf = (err: ApiException): string => {
+	if (err instanceof MultiException) {
+		return [...new Set(err.errors.map(messageOf))].join(", ");
+	}
+
+	return err.message || err.default_message;
+};
 
 export const handleError: ErrorHandler<AppEnv> = (err, c) => {
 	if (err instanceof ZodError) {
-		return c.json(
-			{
-				errors: err.issues.map((issue) => ({
-					code: 7001,
-					message: issue.message,
-					path: issue.path.map(String),
-				})),
-			},
-			400,
-		);
+		const messages = [...new Set(err.issues.map((issue) => issue.message))];
+		return c.json({ message: messages.join(", ") }, 400);
 	}
 
 	if (err instanceof ApiException) {
-		const errors = err.buildResponse();
-		const status = err.status as ContentfulStatusCode;
-
-		if (isValidationError(err)) {
-			return c.json({ errors }, status);
-		}
-
-		return c.json({ error: errors[0] }, status);
+		return c.json({ message: messageOf(err) }, err.status as ContentfulStatusCode);
 	}
 
 	if (err instanceof HTTPException) {
-		return c.json({ error: { code: 7000, message: err.message } }, err.status);
+		return c.json({ message: err.message }, err.status);
 	}
 
 	console.error("Unhandled error:", err);
 
-	return c.json({ error: { code: 7009, message: "Internal Server Error" } }, 500);
+	return c.json({ message: "Internal Server Error" }, 500);
 };
 
 export const handleNotFound: NotFoundHandler<AppEnv> = (c) =>
-	c.json({ error: { code: 7002, message: "Not Found" } }, 404);
+	c.json({ message: "Not Found" }, 404);
